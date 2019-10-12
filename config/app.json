@@ -1,0 +1,16 @@
+{
+    "db": {
+        "host": "localhost",
+        "user": "root",
+        "password": "password",
+        "database": "books",
+        "port": 3306
+    },
+    "http": {
+        "port": 3000
+    },
+    "generator": {
+        "count": 100000,
+        "chunk": 1000
+    }
+}

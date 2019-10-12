@@ -1,0 +1,24 @@
+{
+  "name": "test-task-koa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BogdanSG/test-task-koa.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BogdanSG/test-task-koa/issues"
+  },
+  "homepage": "https://github.com/BogdanSG/test-task-koa#readme",
+  "dependencies": {
+    "koa": "^2.10.0",
+    "lorem-ipsum": "^2.0.3",
+    "mysql2": "^1.7.0"
+  }
+}
