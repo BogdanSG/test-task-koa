@@ -1,4 +1,8 @@
 {
+    "app": {
+        "cacheTimeSeconds": 10,
+        "paginationInterval": 4
+    },
     "db": {
         "host": "localhost",
         "user": "root",

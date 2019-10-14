@@ -1,0 +1,49 @@
+extends layout
+
+block content
+  div.container.p-1.m-0.mt-3.ml-4
+    form.row(action="/", method="get")
+      select.col-1.mr-2.form-control(name="limit")
+        each item in ["10", "25", "50", "100"]
+          if limit === item
+            option(value=item, selected) #{item}
+          else
+            option(value=item) #{item}
+      input.col-3.mr-2.form-control(type="text", name="search", placeholder="Search ...", value=search)
+      input.col-auto.mr-4.btn.btn-primary(type="submit" value="Apply")
+      div.col-auto
+        if prevPage
+          a.btn.btn-primary.mr-2(href=paginationQuery + prevPage) <
+        div.btn-group.mr-2
+          each item in pagination
+            if item
+              if item == page
+                a.btn.btn-primary(href=paginationQuery + item, type='button') #{item}
+              else
+                a.btn.btn-outline-primary(href=paginationQuery + item, type='button') #{item}
+            else
+              a.btn.btn-outline-primary(href="#", type='button') ...
+        if nextPage
+          a.btn.btn-primary.mr-2(href=paginationQuery + nextPage) >
+  div.pl-3.pr-3.mt-2
+    table.table.table-striped
+      thead
+        tr
+          th(scope='col') №
+          th(scope='col') Title
+          th(scope='col') Date
+          th(scope='col') Author
+          th(scope='col') Description
+          th(scope='col') Image
+      tbody
+        each book, index in books
+          tr
+            th(scope='row') #{index}
+            td
+              a(href='/book/' + book.book_id) #{book.title}
+            td #{book.date}
+            td #{book.author}
+            td #{book.description}
+            td
+              a(href='/book/' + book.book_id)
+                img(src=book.image ? '/img/books/' + book.image : '/img/books/default.jpg' width='100px')
