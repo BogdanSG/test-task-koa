@@ -7,57 +7,84 @@ router.get('/', async function (ctx) {
     //обычно я так не заморачиваюсь, просто в этот раз решил сделать логику пагинации как тут https://dribbble.com/shots/5088732-Vuesax-Pagination-Component
 
     const limit = ctx.query.limit || "10";
-    const page = +(ctx.query.page || "1");
-    const search = ctx.query.search || "";
-    const offset = page * limit;
+    const page = Math.ceil(+(ctx.query.page || "1"));
+    const search = (ctx.query.search || "").trim();
+    const offset = (page - 1) * limit;
+    //all columns books for search
+    const searchColumns = ['title', 'date', 'author', 'description'];
 
-    const booksData = await db.query(`SELECT book_id, title, date, author, description, image FROM books LIMIT ${limit} OFFSET ${offset}`);
-    const countData = await db.query("SELECT COUNT(book_id) AS count FROM books");
+    let where = "";
 
-    const count = countData[0][0].count;
-    const countAllPages = (count - limit) / limit;
-    let pagination = [];
+    if (search) {
 
-    if (page - config.app.paginationInterval < 0 || page + config.app.paginationInterval - 1 > countAllPages) {
+        where = "WHERE ";
 
-        const pagesData = [countAllPages];
-
-        for (let i = 1; i <= config.app.paginationInterval; i++) {
-            pagination.push(i);
-            if (i < config.app.paginationInterval && countAllPages - i > i)
-                pagesData.push(countAllPages - i);
-        } //for
-
-        pagination = [...pagination, false, ...pagesData.reverse()];
+        searchColumns.forEach((column, index) => {
+            where += `${index === 0 ? "" : " OR "}LOWER(${column}) LIKE LOWER(?)`;
+        });
 
     } //if
-    else {
 
-        pagination.push(1, false);
-        const half = config.app.paginationInterval / 2;
+    const queryVariables = where ? searchColumns.map(() => `%${search}%`) : [];
 
-        for (let i = half; i >= 0; i--)
-            pagination.push(page - i);
+    const booksData = await db.query(`SELECT book_id, title, date, author, description, image FROM books ${where} LIMIT ${limit} OFFSET ${offset}`, queryVariables);
+    const countData = await db.query(`SELECT COUNT(book_id) AS count FROM books ${where}`, queryVariables);
 
-        for (let i = 1; i <= half; i++)
-            pagination.push(page + i);
-
-        pagination.push(false, countAllPages);
-
-    } //else
-
+    const count = countData[0][0].count;
+    const countAllPages = Math.ceil(count / limit);
+    let pagination = [];
     let paginationQuery = '';
 
-    for (let prop in ctx.query) {
-        if (prop === 'page') continue;
-        paginationQuery += (!paginationQuery ? '/?' : '&') + `${prop}=${ctx.query[prop]}`;
-    } //for
+    if (countAllPages > 1) {
 
-    paginationQuery += paginationQuery ? '&page=' : '?page=';
+        if (config.app.paginationInterval >= countAllPages) {
+
+            for (let i = 1; i <= countAllPages; i++)
+                pagination.push(i);
+
+        } //if
+        else if (page - config.app.paginationInterval < 0 || page + config.app.paginationInterval - 1 > countAllPages) {
+
+            const pagesData = [countAllPages];
+
+            for (let i = 1; i <= config.app.paginationInterval; i++)
+                pagination.push(i);
+
+            for (let i = 1; i < config.app.paginationInterval; i++)
+                if (Math.max(...pagination) < countAllPages - i)
+                    pagesData.push(countAllPages - i);
+
+            pagination = [...pagination, false, ...pagesData.reverse()];
+
+        } //if
+        else {
+
+            pagination.push(1, false);
+            const half = Math.ceil(config.app.paginationInterval / 2);
+
+            for (let i = half; i >= 0; i--)
+                pagination.push(page - i);
+
+            for (let i = 1; i <= half; i++)
+                pagination.push(page + i);
+
+            pagination.push(false, countAllPages);
+
+        } //else
+
+        for (let prop in ctx.query) {
+            if (prop === 'page') continue;
+            paginationQuery += (!paginationQuery ? '/?' : '&') + `${prop}=${ctx.query[prop]}`;
+        } //for
+
+        paginationQuery += paginationQuery ? '&page=' : '?page=';
+
+    } //if
 
     await ctx.render('index', {
         page,
         limit,
+        offset,
         search,
         pagination,
         paginationQuery,

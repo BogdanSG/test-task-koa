@@ -38,7 +38,7 @@ block content
       tbody
         each book, index in books
           tr
-            th(scope='row') #{index}
+            th(scope='row') #{offset + index + 1}
             td
               a(href='/book/' + book.book_id) #{book.title}
             td #{book.date}
