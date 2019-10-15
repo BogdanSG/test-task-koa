@@ -1,6 +1,23 @@
+const mcache = require('memory-cache');
 const router = require('koa-router')();
 const db = require("../services/db");
 const config = require("../config/app.json");
+
+router.get('/', async (ctx, next) => { //кеширование страницы (доп функционал к 2.2 по тз)
+    if (ctx.request.method === "GET") {
+        const cachedBody = mcache.get(ctx.URL.href);
+        if (cachedBody) {
+            ctx.body = cachedBody;
+        } //if
+        else {
+            await next();
+            if (typeof ctx.response.body === "string")
+                mcache.put(ctx.URL.href, ctx.response.body, config.app.cacheTimeSeconds * 1000);
+        } //else 
+    } //if
+    else
+        next();
+});
 
 router.get('/', async function (ctx) {
 
@@ -27,7 +44,7 @@ router.get('/', async function (ctx) {
 
     const queryVariables = where ? searchColumns.map(() => `%${search}%`) : [];
 
-    const booksData = await db.query(`SELECT book_id, title, date, author, description, image FROM books ${where} LIMIT ${limit} OFFSET ${offset}`, queryVariables);
+    const booksData = await db.query(`SELECT book_id, title, date, author, description, image FROM books ${where} ORDER BY book_id DESC LIMIT ${limit} OFFSET ${offset}`, queryVariables);
     const countData = await db.query(`SELECT COUNT(book_id) AS count FROM books ${where}`, queryVariables);
 
     const count = countData[0][0].count;

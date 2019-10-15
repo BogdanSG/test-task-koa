@@ -1,11 +1,11 @@
 extends layout
 
 block content
-  form(action="/book/update",  method="post", enctype="multipart/form-data").container.mt-5
+  form(action="/book/set",  method="post", enctype="multipart/form-data").container.mt-5
     div.row
       div.col-3
         div.row.justify-content-center
-            img(src=book.image ? "/img/books/" + book.image : "/img/books/default.jpg" width="300px")
+            img(src=book && book.image ? "/img/books/" + book.image : "/img/books/default.jpg" width="300px")
         div.row.justify-content-center
             input(type="file", name="image", accept="image/x-png,image/gif,image/jpeg")
       div.col-9
@@ -13,27 +13,27 @@ block content
           div.card-body
             div.row
               div.col-12
-                h4 Edit Book
+                h4 #{book ? "Edit" : "Create"} Book
                 hr
             div.row
               div.col-12
                 div.form-group.row
                   label.col-4.col-form-label Title
                   div.col-8
-                    input.form-control.here(name="title", placeholder="Title", required="required", type="text", value=book.title)
+                    input.form-control.here(name="title", placeholder="Title", required="required", type="text", value=book ? book.title : "")
                 div.form-group.row
                   label.col-4.col-form-label(for="name") Author
                   div.col-8
-                    input.form-control.here(name="author", placeholder="Author", required="required", type="text", value=book.author)
+                    input.form-control.here(name="author", placeholder="Author", required="required", type="text", value=book ? book.author : "")
                 div.form-group.row
                   label.col-4.col-form-label(for="lastname") Date
                   div.col-8
-                    input.form-control.here(name="date", required="required", type="datetime-local", value=book.date)
+                    input.form-control.here(name="date", required="required", type="datetime-local", value=book ? book.date : "")
                 div.form-group.row
                   label.col-4.col-form-label Description
                   div.col-8
-                    textarea.form-control(name="description", rows="12") #{book.description}
+                    textarea.form-control(name="description", rows="12") #{book ? book.description : ""}
                 div.form-group.row
                   div.offset-4.col-auto
-                    input(name="book_id", type="hidden", required="required", value=book.book_id)
-                    input.btn.btn-primary(type="submit", value="Update")
+                    input(name="book_id", type="hidden", required="required", value=book ? book.book_id : "")
+                    input.btn.btn-primary(type="submit", value=book ? "Update" : "Create")
